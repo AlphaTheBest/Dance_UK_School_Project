@@ -113,6 +113,9 @@ class Judge_Menu(tk.Frame):
         self.Test_Button = tk.Button(self, text = "Total & Save", command = lambda: self.Calculate_Couple_Total_Score(self.Get_Judge_Entries()))
         self.Test_Button.pack()
 
+        self.Eliminator_Button = tk.Button(self, text = "Eliminate 2 Lowest Scores", command = lambda: self.Eliminate_Two_Lowest_Scores())
+        self.Eliminator_Button.pack()
+
 
     def Get_Judge_Entries(self):
 
@@ -153,7 +156,7 @@ class Judge_Menu(tk.Frame):
                 Local_Scores.pop(counter)
                 Min_Found = True
 
-            if Local_Scores[counter] == True_Max and Max_Found == False:
+            elif Local_Scores[counter] == True_Max and Max_Found == False:
                 Local_Scores.pop(counter)
                 Max_Found = True
 
@@ -206,10 +209,122 @@ class Judge_Menu(tk.Frame):
         
         File_Name = Round_Name
         
-        File_Cache_Contents = "{" + Couple_Name + "," + str(Total) + "}\n"
+        File_Cache_Contents = Couple_Name + "," + str(Total) + ",1\n"
         
         Open_File.write(File_Cache_Contents)
         Open_File.close()
+
+    def Eliminate_Two_Lowest_Scores(self):
+        Event_Name = self.Input_Box_Round_Name.get()
+
+        Round_Results = open("events\\"+Event_Name+".txt", "r")
+        Read_Round_Results = Round_Results.readlines()
+        Round_Results_2D_Array = []
+
+        for i in Read_Round_Results:
+
+            Temporary_Content_Holder = i.split(',')
+            Temporary_Content_Holder = list(map(lambda x:x.strip(),Temporary_Content_Holder))
+            
+            Round_Results_2D_Array.append(Temporary_Content_Holder)
+
+        """
+        These comments are here as notes, because this is a bit complex
+        1.There are two arrays: One to store all the totals, the other to store indexes.
+        This because when the minimum is found, it will be removed from the array.
+        The indexes are stored to prevent out of range errors
+
+        If the total of the couple is the minimum, the 1 will be changed to a 0.
+        """
+        Round_Results_Totals_Array = []
+
+        Number_Of_Totals = len(Round_Results_2D_Array)
+
+        for i in Round_Results_2D_Array:
+            Round_Results_Totals_Array.append(int(i[1]))
+
+        Total_Count = Round_Results_Totals_Array.count(min(Round_Results_Totals_Array))
+
+        print(Round_Results_2D_Array)
+
+        if Total_Count <= 2:
+            Clock_Counter = 0
+            Secondary_Clock_Counter = 0
+            Eliminated = 0
+
+            while Clock_Counter < Number_Of_Totals and Eliminated < 2:
+                print("executing_1")
+                if Round_Results_Totals_Array[Clock_Counter] == min(Round_Results_Totals_Array):
+
+                    Round_Results_Totals_Array.pop(Clock_Counter)
+                    
+                    Round_Results_2D_Array[Secondary_Clock_Counter][2] = '0'
+                    print("executing_2")
+
+                    Clock_Counter = Clock_Counter - 1
+                    Number_Of_Totals = Number_Of_Totals - 1
+
+                    Eliminated = Eliminated + 1
+
+                Clock_Counter = Clock_Counter + 1
+                Secondary_Clock_Counter = Secondary_Clock_Counter + 1
+                
+        else:
+            Index_Of_Lowest_Scoring_Couples = 0
+            
+            Lowest_Scoring_Couples_Array = []
+            Lowest_Scores = []
+
+            for i in Round_Results_Totals_Array:
+                if i == min(Round_Results_Totals_Array):
+                    Lowest_Scoring_Couples_Array.append(Index_Of_Lowest_Scoring_Couples)
+                    Lowest_Scores.append(i)
+
+                Index_Of_Lowest_Scoring_Couples = Index_Of_Lowest_Scoring_Couples + 1
+
+            #Now we get the minimum and maximum scores of the lowest scoring couples
+            Lowest_Score_Array_Index = 0
+            
+            for i in Lowest_Scoring_Couples_Array:
+                Low_Scoring_Couple_File = open(Round_Results_2D_Array[i][0]+"\\"+Event_Name+".txt")
+                Low_Scoring_Couple_File_Read = Low_Scoring_Couple_File.read()
+    
+                Low_Scoring_Couple_File_Read = Low_Scoring_Couple_File_Read.split('*')
+                Low_Scoring_Couple_File_Read.pop(5)
+
+                Low_Scoring_Couple_File.close()
+
+                New_Score = Lowest_Scores[Lowest_Score_Array_Index] + int(min(Low_Scoring_Couple_File_Read)) + int(max(Low_Scoring_Couple_File_Read))
+                Lowest_Scores[Lowest_Score_Array_Index] = New_Score
+
+                Lowest_Score_Array_Index = Lowest_Score_Array_Index + 1
+
+            Clock_Counter = 0
+            Index_Counter = 0
+            Eliminated = 0
+            Length_Of_Array = len(Lowest_Scores)
+
+            while Clock_Counter < Length_Of_Array and Eliminated < 2:
+                if Lowest_Scores[Clock_Counter] == min(Lowest_Scores):
+                    Lowest_Scores.pop(Clock_Counter)
+                    print(Lowest_Scores)
+                    print(Lowest_Scoring_Couples_Array)
+                    print(Clock_Counter)
+
+                    index = Lowest_Scoring_Couples_Array[Index_Counter]
+                    
+                    Round_Results_2D_Array[index][2] = '0'
+                    print("executing_2")
+
+                    Clock_Counter = Clock_Counter - 1
+                    Length_Of_Array = Length_Of_Array - 1
+                    
+                    Eliminated = Eliminated + 1
+
+                Clock_Counter = Clock_Counter + 1
+                Index_Counter = Index_Counter + 1
+            
+            print(Round_Results_2D_Array)
 
 
 class Couple_Menu(tk.Frame):
@@ -231,7 +346,6 @@ class Couple_Menu(tk.Frame):
 root = tk.Tk()
 app = Entry_Menu(master=root)
 app.mainloop()
-
 
 
 
