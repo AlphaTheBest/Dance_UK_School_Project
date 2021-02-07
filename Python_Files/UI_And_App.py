@@ -1,7 +1,11 @@
 import tkinter as tk
 from tkinter import font as tkfont
+from tkinter import ttk
+from tkinter import simpledialog
 
 import os
+from os import listdir
+from os.path import isfile, join
 
 class Sample_APP(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -116,7 +120,6 @@ class Judge_Menu(tk.Frame):
         self.Eliminator_Button = tk.Button(self, text = "Eliminate 2 Lowest Scores", command = lambda: self.Eliminate_Two_Lowest_Scores())
         self.Eliminator_Button.pack()
 
-
     def Get_Judge_Entries(self):
 
         self.Couples_Registered_So_Far = self.Couples_Registered_So_Far + 1
@@ -221,6 +224,8 @@ class Judge_Menu(tk.Frame):
         Read_Round_Results = Round_Results.readlines()
         Round_Results_2D_Array = []
 
+        Round_Results.close()
+
         for i in Read_Round_Results:
 
             Temporary_Content_Holder = i.split(',')
@@ -323,9 +328,69 @@ class Judge_Menu(tk.Frame):
 
                 Clock_Counter = Clock_Counter + 1
                 Index_Counter = Index_Counter + 1
-            
+
+            String_For_Storing_New_Data = ''
+
+            for i in Round_Results_2D_Array:
+                i.append("\n")
+
+            for i in Round_Results_2D_Array:
+                No_of_commas = 0
+                for j in i:
+                    if No_of_commas < 2:
+                        String_For_Storing_New_Data = String_For_Storing_New_Data + j + ','
+                        No_of_commas = No_of_commas + 1
+
+                    else:
+                        String_For_Storing_New_Data = String_For_Storing_New_Data + j
+
+            Round_Results = open("events\\"+Event_Name+".txt", "w")
+            Round_Results.write(String_For_Storing_New_Data)
+            Round_Results.close()
             print(Round_Results_2D_Array)
 
+            self.Pop_Up_Eliminated_Couples()
+            
+
+    def Pop_Up_Eliminated_Couples(self):
+
+        Event_Name = self.Input_Box_Round_Name.get()
+        Event_Results = open("events\\"+Event_Name + ".txt", "r")
+
+        Temporary_Storage_Of_Results = Event_Results.readlines()
+        Array_Of_Results = []
+
+        for i in Temporary_Storage_Of_Results:
+            Temporary_Container = i.split(",")
+            Temporary_Container = list(map(lambda x:x.strip(),Temporary_Container))
+
+            Array_Of_Results.append(Temporary_Container)
+
+            
+        Pop_Up_Message = ''
+        Couples_Eliminated = 0
+
+        for i in Array_Of_Results:
+            if i[2] == '0':
+                if Couples_Eliminated == 0:
+                    Pop_Up_Message = Pop_Up_Message + i[0] + ' and '
+
+                elif Couples_Eliminated == 1:
+                    Pop_Up_Message = Pop_Up_Message + i[0] + ' have been eliminated.'
+
+                Couples_Eliminated = Couples_Eliminated + 1
+
+        Pop_Up_Window = tk.Toplevel()
+        Pop_Up_Window.wm_title("Window")
+
+        Pop_Up_Message_Label = tk.Label(Pop_Up_Window, text=Pop_Up_Message)
+        Pop_Up_Message_Label.grid(row=0, column=0)
+
+        Close_Button = ttk.Button(Pop_Up_Window, text="OK", command=Pop_Up_Window.destroy)
+        Close_Button.grid(row=1, column=0)
+        
+
+            
 
 class Couple_Menu(tk.Frame):
     def __init__(self, master = None):
@@ -333,20 +398,89 @@ class Couple_Menu(tk.Frame):
         self.master = master
         self.pack()
 
+        self.Get_Couple_Name_Function()
+
+        self.Test_Button()
+
         self.create_widgets()
 
     def create_widgets(self):
-        self.Couple_Test_Button = tk.Button(self, text = "Test_2", command = self.Test_Button)
-        self.Couple_Test_Button.pack()
 
-    def Test_Button(self):
-        print("This works too!")
+        self.Round_Name_Label = tk.Label(self, text = "Round Name")
+        self.Round_Name_Label.grid(row = 0, column = 0)
+
+        self.Output_Label_Judge_1 = tk.Label(self, text = "Judge 1")
+        self.Output_Label_Judge_1.grid(row = 0, column = 1)
+
+        self.Output_Label_Judge_2 = tk.Label(self, text = "Judge 2")
+        self.Output_Label_Judge_2.grid(row = 0, column = 2)
+
+        self.Output_Label_Judge_3 = tk.Label(self, text = "Judge 3")
+        self.Output_Label_Judge_3.grid(row = 0, column = 3)
+
+        self.Output_Label_Judge_4 = tk.Label(self, text = "Judge 4")
+        self.Output_Label_Judge_4.grid(row = 0, column = 4)
+
+        self.Output_Label_Judge_5 = tk.Label(self, text = "Judge 5")
+        self.Output_Label_Judge_5.grid(row = 0, column = 5)
+
+        self.Output_Label_Judge_Total = tk.Label(self, text = "Total")
+        self.Output_Label_Judge_Total.grid(row = 0, column = 6)
         
+    def Test_Button(self):
+        try:
+            path = os.path.abspath(os.getcwd())
+            new_path = path + "\\" + self.Get_Couple_Name
+
+            onlyfiles = [f for f in listdir(new_path) if isfile(join(new_path, f))]
+
+            Array_Of_Results = []
+
+            for i in onlyfiles:
+                f = open(new_path + "\\" + i)
+                Temporary_Storage = f.read()
+                Array_Of_Results.append(Temporary_Storage.split("*"))
+
+            Row_Counter = 1
+            Column_Counter = 0
+            Name_Counter = 0
+
+            print(Array_Of_Results)
+
+            for i in Array_Of_Results:
+                Name_Of_Event = onlyfiles[Name_Counter]
+                End_Index = len(Name_Of_Event)-4
+
+                Column_Counter = 0
+                
+                self.Round_Name_Label = tk.Label(self, text = Name_Of_Event[0:End_Index])
+                self.Round_Name_Label.grid(row = Row_Counter, column = Column_Counter)
+
+                Column_Counter = Column_Counter + 1
+
+                for j in i:
+                    print(j)
+                    self.Results_Label = tk.Label(self, text = j)
+                    self.Results_Label.grid(row = Row_Counter, column = Column_Counter)
+
+                    Column_Counter = Column_Counter + 1
+
+                Row_Counter = Row_Counter + 1
+
+                Name_Counter = Name_Counter + 1
+
+        except IOError:
+            print("Incorrect Input")
+            self.Get_Couple_Name_Function()
+
+    def Get_Couple_Name_Function(self):
+        self.Get_Couple_Name = simpledialog.askstring(title = "Test",
+                                                      prompt = "Couple_Name: ")
+
 
 root = tk.Tk()
 app = Entry_Menu(master=root)
 app.mainloop()
-
 
 
 
