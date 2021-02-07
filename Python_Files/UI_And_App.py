@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import ttk
 from tkinter import simpledialog
+from tkinter import messagebox
 
 import os
 from os import listdir
@@ -131,13 +132,58 @@ class Judge_Menu(tk.Frame):
         Judge_4_Entry = int(self.Input_Box_Judge_4.get())
         Judge_5_Entry = int(self.Input_Box_Judge_5.get())
 
-        self.Input_Box_Judge_1.delete(0, "end")
-        self.Input_Box_Judge_2.delete(0, "end")
-        self.Input_Box_Judge_3.delete(0, "end")
-        self.Input_Box_Judge_4.delete(0, "end")
-        self.Input_Box_Judge_5.delete(0, "end")
+        Error_String = ''
+        Errors = 0
 
-        return [Judge_1_Entry, Judge_2_Entry, Judge_3_Entry, Judge_4_Entry, Judge_5_Entry]
+        Valid_Round_Name = False
+        Valid_Couple_Name = False
+
+        if self.Input_Box_Round_Name.get() != '':
+            Valid_Round_Name = True
+
+        else:
+            messagebox.showerror("Error Judge Input", "No Round Name")
+
+        if self.Input_Box_Couple_Name.get() != '':
+            Valid_Couple_Name = True
+
+        else:
+            messagebox.showerror("Error Judge Input", "No Couple Name")
+
+        if Judge_1_Entry < 0 or Judge_1_Entry > 10:
+
+            self.Input_Box_Judge_1.delete(0, "end")
+            Errors = Errors + 1
+
+        if Judge_2_Entry < 0 or Judge_2_Entry > 10:
+        
+            self.Input_Box_Judge_2.delete(0, "end")
+            Errors = Errors + 1
+
+        if Judge_3_Entry < 0 or Judge_3_Entry > 10:
+            
+            self.Input_Box_Judge_3.delete(0, "end")
+            Errors = Errors + 1
+
+        if Judge_4_Entry < 0 or Judge_4_Entry > 10:
+            
+            self.Input_Box_Judge_4.delete(0, "end")
+            Errors = Errors + 1
+
+        if Judge_5_Entry < 0 or Judge_5_Entry > 10:
+            self.Input_Box_Judge_5.delete(0, "end")
+            Errors = Errors + 1
+
+        if Errors == 0 and Valid_Round_Name == True and Valid_Couple_Name == True:
+            self.Input_Box_Judge_1.delete(0, "end")
+            self.Input_Box_Judge_2.delete(0, "end")
+            self.Input_Box_Judge_3.delete(0, "end")
+            self.Input_Box_Judge_4.delete(0, "end")
+            self.Input_Box_Judge_5.delete(0, "end")
+            return [Judge_1_Entry, Judge_2_Entry, Judge_3_Entry, Judge_4_Entry, Judge_5_Entry]
+
+        else:
+            messagebox.showerror("Error Judge Input", "Judge Input Is incorrect")
 
     def Calculate_Couple_Total_Score(self, Couple_Results):
         
@@ -170,6 +216,7 @@ class Judge_Menu(tk.Frame):
         for i in Local_Scores:
             Total = Total + i
 
+    
         Couple_Name = self.Input_Box_Couple_Name.get()
         Round_Name = self.Input_Box_Round_Name.get()
 
@@ -481,6 +528,3 @@ class Couple_Menu(tk.Frame):
 root = tk.Tk()
 app = Entry_Menu(master=root)
 app.mainloop()
-
-
-
